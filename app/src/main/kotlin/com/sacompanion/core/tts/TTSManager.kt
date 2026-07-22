@@ -14,12 +14,15 @@ enum class TTSState { IDLE, SPEAKING, ERROR }
 
 class TTSManager(private val context: Context) {
 
-    private var tts: TextToSpeech? = null
+        private var tts: TextToSpeech? = null
+    private var isInitialized = false
+    private var selectedEngine = TTSEngine.ANDROID
     private var isInitialized = false
     private var selectedEngine = TTSEngine.ANDROID
     private var isSpeaking = false
 
-    private val _ttsState = MutableStateFlow(TTSState.IDLE)
+        private val _ttsState = MutableStateFlow(TTSState.IDLE)
+    val ttsState: StateFlow<TTSState> = _ttsState.asStateFlow()
     val ttsState: StateFlow<TTSState> = _ttsState.asStateFlow()
 
     private val speechQueue = ArrayDeque<String>()
