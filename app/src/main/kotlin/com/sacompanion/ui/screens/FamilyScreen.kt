@@ -142,7 +142,7 @@ fun FamilyScreen(onBack: () -> Unit) {
             confirmButton = {
                 TextButton(onClick = {
                     if (name.isNotBlank()) {
-                        val profile = (editingProfile ?: FamilyProfileEntity(0, "", "", "", false, "", false, 0)).copy(
+                        val profile = (editingProfile ?: FamilyProfileEntity(0, "", "", "", "", "", false, 0)).copy(
                             name = name.trim(), relation = relation.trim(),
                             accessLevel = if (isOwner) "full" else accessLevel,
                             notes = notes.trim(), isOwner = isOwner
