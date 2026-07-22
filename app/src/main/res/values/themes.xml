@@ -2,12 +2,9 @@
 <resources>
     <style name="Theme.SACompanion" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/cyber_blue</item>
-        <item name="colorPrimaryVariant">@color/cyber_blue_deep</item>
         <item name="colorOnPrimary">@color/dark_base</item>
         <item name="colorSecondary">@color/neon_green</item>
         <item name="colorOnSecondary">@color/dark_base</item>
-        <item name="colorBackground">@color/dark_base</item>
-        <item name="colorOnBackground">@color/text_primary</item>
         <item name="colorSurface">@color/dark_surface</item>
         <item name="colorOnSurface">@color/text_primary</item>
         <item name="android:statusBarColor">@color/dark_base</item>
