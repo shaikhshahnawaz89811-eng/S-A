@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SA Companion</string>
+    <string name="assistant_name">SA</string>
+    <string name="app_tagline">Personal AI Voice Assistant</string>
+
+    <!-- Notifications -->
+    <string name="notification_service_title">SA Assistant</string>
+    <string name="notification_service_text">SA Core Online — Listening for wake word</string>
+    <string name="notification_service_channel">SA Assistant Service</string>
+
+    <!-- Voice -->
+    <string name="wake_word">SA</string>
+    <string name="listening">Listening…</string>
+    <string name="processing">Processing…</string>
+    <string name="speaking">Speaking…</string>
+
+    <!-- Permissions -->
+    <string name="permission_mic_title">Microphone Permission</string>
+    <string name="permission_mic_msg">SA needs microphone access to hear your voice commands.</string>
+    <string name="permission_overlay_title">Overlay Permission</string>
+    <string name="permission_overlay_msg">SA needs overlay permission to show the floating assistant window.</string>
+
+    <!-- Buttons -->
+    <string name="btn_start_assistant">Start Assistant</string>
+    <string name="btn_stop_assistant">Stop Assistant</string>
+    <string name="btn_voice">Voice</string>
+    <string name="btn_ai">AI Chat</string>
+    <string name="btn_phone">Phone Control</string>
+    <string name="btn_music">Music</string>
+    <string name="btn_memory">Memory</string>
+    <string name="btn_settings">Settings</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_sa_orb">SA AI Orb — Futuristic holographic interface</string>
+    <string name="cd_microphone">Microphone button</string>
+    <string name="cd_send">Send message</string>
+
+    <!-- Settings -->
+    <string name="settings_groq_key">Groq API Key</string>
+    <string name="settings_groq_key_hint">Get free key at console.groq.com</string>
+    <string name="settings_voice">Voice Settings</string>
+    <string name="settings_about">About SA Companion</string>
+</resources>

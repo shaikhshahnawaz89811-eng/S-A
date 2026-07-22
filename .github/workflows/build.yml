@@ -1,0 +1,153 @@
+name: Build SA Companion APK
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v3
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Build Release APK (signed)
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "Signing with provided keystore..."
+            mkdir -p keystore
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore/release.jks
+            ./gradlew assembleRelease --stacktrace
+          else
+            echo "No keystore found — building unsigned release..."
+            ./gradlew assembleRelease --stacktrace
+          fi
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: List APK outputs
+        run: |
+          echo "=== APK Files ==="
+          find app/build/outputs/apk -name "*.apk" -exec ls -lh {} \;
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sa-companion-debug-${{ github.run_number }}
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sa-companion-release-${{ github.run_number }}
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 30
+
+      - name: Upload Build Reports on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: build-reports-${{ github.run_number }}
+          path: |
+            app/build/reports/
+            app/build/kotlin/
+          retention-days: 7
+
+  # Release job — runs only on tag push
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+
+      - name: Setup keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        run: |
+          mkdir -p keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > keystore/release.jks
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --stacktrace
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/release/*.apk
+          name: SA Companion ${{ github.ref_name }}
+          body: |
+            ## SA Companion ${{ github.ref_name }}
+            
+            ### What's New
+            - SA Companion release build
+            
+            ### Installation
+            1. Download `app-release.apk`
+            2. Enable "Install from unknown sources" on your device
+            3. Install the APK
+            4. Grant required permissions (Microphone, Overlay, etc.)
+            5. Add your Groq API key in Settings
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
